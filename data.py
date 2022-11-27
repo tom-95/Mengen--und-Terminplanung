@@ -54,16 +54,20 @@ def verschiebung_durchführen(montage, vormontage, fräserei, dreherei, stanzere
     return montage, vormontage, fräserei, dreherei, stanzerei, periode
 
 
-# auftrag = pd.read_csv("Auftrag_1.csv", sep=";")
-auftrag = pd.read_csv("Auftrag_2.csv", sep=";")
+auftrag = pd.read_csv("Auftrag_1.csv", sep=";")
+# auftrag = pd.read_csv("Auftrag_2.csv", sep=";")
 
 p_100 = auftrag.query('Produkt == "P-100"')
 p_101 = auftrag.query('Produkt == "P-101"')
 p_200 = auftrag.query('Produkt == "P-200"')
 
-montage = []
-
 highest = -1
+
+verschiebung = False
+
+########## montage
+
+montage = []
 
 for x in range(19):
     if p_100.get(str(x)) is not None:
@@ -115,7 +119,7 @@ for x in range(len(res3)):
         res3[x] = 10
         res3[x - 1] = 10
 
-# zusammenfügen
+########## zusammenfügen
 
 for x in range(len(res2)):
     if res2[len(res2) - x - 1] != 0:
@@ -147,13 +151,10 @@ while montage[-1] == 0:
     montage.pop()
     highest = highest - 1
 
-# print(res)
-# print(highest)
-
 while len(montage) < highest:
     montage.insert(0, 0)
 
-# print(int(res.get("13")))
+########## vormontage
 
 vormontage = montage.copy()
 
@@ -177,6 +178,8 @@ for i, obj in enumerate(vormontage.copy()):
 
 wel_amount_100 = geh_amount_100
 wel_amount_200 = geh_amount_200
+
+########## fräserei
 
 fräserei = [0] * highest
 
@@ -228,6 +231,8 @@ if geh_amount_200 < 50:
         fräserei.pop(0)
         index = index - 1
 
+########## dreherei
+
 dreherei = [0] * highest
 
 while wel_amount_100 > 0:
@@ -247,7 +252,6 @@ while wel_amount_100 > 0:
 
 while wel_amount_200 > 0:
     index = -1
-    verschiebung = False
 
     for i, x in enumerate(vormontage):
         if str(x).__contains__("10 ROT-200"):
@@ -271,6 +275,8 @@ while wel_amount_200 > 0:
 
     wel_amount_200 = wel_amount_200 - 60
 
+########## stanzerei
+
 stanzerei = [0] * highest
 
 for i, obj in enumerate(vormontage):
@@ -289,6 +295,8 @@ for i, obj in enumerate(vormontage):
 stanzerei.append(0)
 stanzerei.pop(0)
 
+########## create dataframe
+
 abt = ["Montage", "Vormontage", "Fräserei", "Dreherei", "Stanzerei"]
 
 per = list(range(1, highest + 1, 1))
@@ -302,7 +310,7 @@ df = pd.DataFrame(data, abt, per)
 
 print(df.to_string())
 
-##############################create gantt chart
+########## create gantt chart
 
 fig, gnt = plt.subplots()
 
